@@ -68,6 +68,30 @@ app.post('/talker',
   }
 });
 
+app.put('/talker/:id', 
+  validateToken,
+  validateId,
+  validateName,
+  validateAge,
+  validateTalk,
+  validateWatched,
+  validateRate,
+  async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+      const talkers = await readTalker();
+      const { name, age, talk } = req.body;
+      const index = talkers.findIndex((tk) => tk.id === id);
+      talkers[index] = { name, age, id, talk };
+      console.log(talkers);
+      const newTalkers = JSON.stringify(talkers);
+      await fs.writeFile('./src/talker.json', newTalkers);
+      res.status(200).json(talkers[index]);
+    } catch (error) {
+      res.status(500).send({ message: error.message });
+    }
+});
+
 app.listen(PORT, () => {
   console.log('Online');
 });
