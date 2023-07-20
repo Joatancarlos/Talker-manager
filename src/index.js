@@ -92,6 +92,19 @@ app.put('/talker/:id',
     }
 });
 
+app.delete('/talker/:id', validateToken, validateId, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const talkers = await readTalker();
+    const deleted = talkers.filter((tk) => tk.id !== id);
+    const newTalkers = JSON.stringify(deleted);
+    await fs.writeFile('./src/talker.json', newTalkers);
+    res.status(204).end();
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log('Online');
 });
