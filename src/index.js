@@ -28,6 +28,8 @@ app.get('/talker/:id', existId, async (req, res) => {
   res.status(200).json(talker);
 });
 
+app.post();
+
 app.listen(PORT, () => {
   console.log('Online');
 });
