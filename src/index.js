@@ -1,7 +1,8 @@
 const express = require('express');
 const readTalker = require('./utils/readTalkers');
 const existId = require('./middlewares/existId');
-// const validateLogin = require('./middlewares/validateLogin');
+const validateLogin = require('./middlewares/validateLogin');
+const generateToken = require('./utils/generateToken');
 
 // require('express-async-errors');
 
@@ -28,7 +29,10 @@ app.get('/talker/:id', existId, async (req, res) => {
   res.status(200).json(talker);
 });
 
-app.post();
+app.post('/login', validateLogin, (req, res) => {
+  const token = generateToken();
+  res.status(200).json({ token });
+});
 
 app.listen(PORT, () => {
   console.log('Online');
