@@ -30,6 +30,17 @@ app.get('/talker', async (req, res) => {
   res.status(200).json(talkers);
 });
 
+app.get('/talker/search', validateToken, async (req, res) => {
+  try {
+    const { q } = req.query;
+    const talkers = await readTalker();
+    const filtered = talkers.filter((tk) => tk.name.includes(q));
+    res.status(200).json(filtered);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+});
+
 app.get('/talker/:id', validateId, async (req, res) => {
   const id = Number(req.params.id);
   const talkers = await readTalker();
