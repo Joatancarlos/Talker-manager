@@ -9,8 +9,9 @@ const validateToken = require('./middlewares/validateToken');
 const validateName = require('./middlewares/validateName');
 const validateAge = require('./middlewares/validateAge');
 const validateTalk = require('./middlewares/validateTalk');
-const validateWatched = require('./middlewares/validateWatched');
+const { validateWatchedBody, validateWatchedQuery } = require('./middlewares/validateWatched');
 const { validateRateBody, validateRateQuery } = require('./middlewares/validateRate');
+const { filterQuery, filterRate, filterDate } = require('./middlewares/filters'); 
 
 // require('express-async-errors');
 
@@ -33,17 +34,14 @@ app.get('/talker', async (req, res) => {
 app.get('/talker/search',
   validateToken,
   validateRateQuery,
+  validateWatchedQuery,
+  filterQuery,
+  filterRate,
+  filterDate,
   async (req, res) => {
     try {
-      const { q, rate } = req.query;
-      const talkers = await readTalker();
-      const filteredByQ = talkers.filter((tk) => tk.name.includes(q));
-      const filteredByRate = talkers
-        .filter((tk) => tk.talk.rate >= Number(rate));
-      if (!rate) return res.status(200).json(q ? filteredByQ : talkers);
-      if (!q) return res.status(200).json(filteredByRate);
-      const filteredByQAndRate = filteredByQ.filter((tk) => tk.talk.rate >= Number(rate));
-      res.status(200).json(filteredByQAndRate);
+      const { filteredTalkers } = req;
+      res.status(200).json(filteredTalkers);
     } catch (error) {
       res.status(500).send({ message: error.message });
     }
@@ -66,7 +64,7 @@ app.post('/talker',
   validateName,
   validateAge,
   validateTalk,
-  validateWatched,
+  validateWatchedBody,
   validateRateBody,
   async (req, res) => {
   try {
@@ -93,7 +91,7 @@ app.put('/talker/:id',
   validateName,
   validateAge,
   validateTalk,
-  validateWatched,
+  validateWatchedBody,
   validateRateBody,
   async (req, res) => {
     try {
