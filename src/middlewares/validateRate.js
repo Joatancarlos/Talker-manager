@@ -1,4 +1,4 @@
-const validateRate = (req, res, next) => {
+const validateRateBody = (req, res, next) => {
   const { talk: { rate } } = req.body;
   if (rate === undefined) {
     return res.status(400).json({ message: 'O campo "rate" é obrigatório' });
@@ -12,4 +12,15 @@ const validateRate = (req, res, next) => {
   next();
 };
 
-module.exports = validateRate;
+const validateRateQuery = (req, res, next) => {
+  const { rate } = req.query;
+  if (rate === undefined) return next(); 
+  if (!Number.isInteger(Number(rate)) || rate < 1 || rate > 5) {
+    return res.status(400).json(
+      { message: 'O campo "rate" deve ser um número inteiro entre 1 e 5' },
+    );
+  }
+  next();
+};
+
+module.exports = { validateRateBody, validateRateQuery };

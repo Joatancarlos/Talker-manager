@@ -10,7 +10,7 @@ const validateName = require('./middlewares/validateName');
 const validateAge = require('./middlewares/validateAge');
 const validateTalk = require('./middlewares/validateTalk');
 const validateWatched = require('./middlewares/validateWatched');
-const validateRate = require('./middlewares/validateRate');
+const { validateRateBody, validateRateQuery } = require('./middlewares/validateRate');
 
 // require('express-async-errors');
 
@@ -30,15 +30,23 @@ app.get('/talker', async (req, res) => {
   res.status(200).json(talkers);
 });
 
-app.get('/talker/search', validateToken, async (req, res) => {
-  try {
-    const { q } = req.query;
-    const talkers = await readTalker();
-    const filtered = talkers.filter((tk) => tk.name.includes(q));
-    res.status(200).json(filtered);
-  } catch (error) {
-    res.status(500).send({ message: error.message });
-  }
+app.get('/talker/search',
+  validateToken,
+  validateRateQuery,
+  async (req, res) => {
+    try {
+      const { q, rate } = req.query;
+      const talkers = await readTalker();
+      const filteredByQ = talkers.filter((tk) => tk.name.includes(q));
+      const filteredByRate = talkers
+        .filter((tk) => tk.talk.rate >= Number(rate));
+      if (!rate) return res.status(200).json(q ? filteredByQ : talkers);
+      if (!q) return res.status(200).json(filteredByRate);
+      const filteredByQAndRate = filteredByQ.filter((tk) => tk.talk.rate >= Number(rate));
+      res.status(200).json(filteredByQAndRate);
+    } catch (error) {
+      res.status(500).send({ message: error.message });
+    }
 });
 
 app.get('/talker/:id', validateId, async (req, res) => {
@@ -59,7 +67,7 @@ app.post('/talker',
   validateAge,
   validateTalk,
   validateWatched,
-  validateRate,
+  validateRateBody,
   async (req, res) => {
   try {
       const talkers = await readTalker();
@@ -86,7 +94,7 @@ app.put('/talker/:id',
   validateAge,
   validateTalk,
   validateWatched,
-  validateRate,
+  validateRateBody,
   async (req, res) => {
     try {
       const id = Number(req.params.id);
